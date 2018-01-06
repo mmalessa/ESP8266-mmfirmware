@@ -6,19 +6,19 @@
 #define GPIO_2 2
 #define GPIO_3 3
 
-Led blueLed(GPIO_1, LED_LOW);
-Led redLed(GPIO_2, LED_HIGH);
+#define ON_WHEN_HIGH 1
+#define ON_WHEN_LOW 0
+
+Led blueLed(GPIO_1, ON_WHEN_LOW);
 
 void setup() {
+
+  // LED TEST
   blueLed.off();
-  redLed.off();
   delay(2000);
   blueLed.startBlinking(0.25);
-  delay(1000);
-  redLed.startBlinking(0.3);
   delay(10000);
   blueLed.stopBlinking();
-  redLed.stopBlinking();
 }
 
 void loop() {

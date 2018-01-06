@@ -1,22 +1,22 @@
 #include "led.h"
 
-Led::Led(byte gpio, byte high)
+Led::Led(byte gpio, byte stateOn)
 {
   _gpio = gpio;
-  _highState = (high > 0) ? 1 : 0;
-  _lowState = (high > 0) ? 0 : 1;
+  _stateOn = (stateOn > 0) ? 1 : 0;
+  _stateOff = (stateOn > 0) ? 0 : 1;
   pinMode(_gpio, OUTPUT);
-  digitalWrite(_gpio, 0);
+  digitalWrite(_gpio, _stateOff);
 }
 
 void Led::on()
 {
-  digitalWrite(_gpio, _highState);
+  digitalWrite(_gpio, _stateOn);
 }
 
 void Led::off()
 {
-  digitalWrite(_gpio, _lowState);
+  digitalWrite(_gpio, _stateOff);
 }
 
 void Led::blink(unsigned int ms)

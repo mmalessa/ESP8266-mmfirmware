@@ -3,13 +3,10 @@
 
 #include <Ticker.h>
 
-#define LED_HIGH 1
-#define LED_LOW 0
-
 class Led
 {
   public:
-    Led(byte gpio, byte high);
+    Led(byte gpio, byte stateOn);
     void on();
     void off();
     void blink(unsigned int t);
@@ -17,10 +14,9 @@ class Led
     void stopBlinking();
   private:
     byte _gpio;
-    byte _highState = 1;
-    byte _lowState = 0;
+    byte _stateOn = 1;
+    byte _stateOff = 0;
     Ticker _ledTimer;
-  
 };
 
 
