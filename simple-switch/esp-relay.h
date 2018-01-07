@@ -1,10 +1,10 @@
-#ifndef _relay_h
-#define _relay_h
+#ifndef _esp_relay_h
+#define _esp_relay_h
 
-class Relay
+class EspRelay
 {
   public:
-    Relay(byte gpio, byte stateOn);
+    EspRelay(byte gpio, byte stateOn);
     void on();
     void off();
     void toggle();

@@ -1,8 +1,8 @@
 
-#define _DEBUG true
-
-#include "led.h"
-#include "relay.h"
+#include "config.h"
+#include "esp-led.h"
+#include "esp-relay.h"
+#include "esp-wifi.h"
 
 #define GPIO_0 0
 #define GPIO_1 1 // blue led
@@ -12,53 +12,19 @@
 #define ON_WHEN_HIGH 1
 #define ON_WHEN_LOW 0
 
-Led blueLed(GPIO_1, ON_WHEN_LOW);
-Relay masterRelay(GPIO_2, ON_WHEN_HIGH);
+Config cfg;
+
+//EspLed blueLed(GPIO_1, ON_WHEN_LOW);
+//EspRelay masterRelay(GPIO_2, ON_WHEN_HIGH);
+//EspWifi wifiClient(cfg.wifiSSID, cfg.wifiPassword, cfg.wifiDeviceName);
+EspWifi espWifi(cfg.wifiSSID);
 
 void setup() {
 
-  #if _DEBUG
   Serial.begin(115200);
-  #endif
+  Serial.println("Startujemy");
+  espWifi.test();  
 
-  // LED TEST
-  /*
-  blueLed.off();
-  delay(2000);
-  blueLed.startBlinking(0.25);
-  delay(10000);
-  blueLed.stopBlinking();
-  */
-  
-
-  // RELAY TEST
-  masterRelay.off();
-  Serial.println("Switch OFF");
-  delay(2000);
-  masterRelay.toggle();
-  Serial.print("Switch TOGGLE: ");
-  Serial.println(masterRelay.getState());
-  delay(2000);
-  masterRelay.toggle();
-  Serial.print("Switch TOGGLE: ");
-  Serial.println(masterRelay.getState());
-  delay(2000);
-  masterRelay.toggle();
-  Serial.print("Switch TOGGLE: ");
-  Serial.println(masterRelay.getState());
-  delay(2000);
-  masterRelay.toggle();
-  Serial.print("Switch TOGGLE: ");
-  Serial.println(masterRelay.getState());
-  delay(2000);
-  masterRelay.off();
-  Serial.println("Switch OFF");
-  delay(2000);
-  masterRelay.on();
-  Serial.println("Switch ON");
-  delay(2000);
-  masterRelay.off();
-  Serial.println("Switch OFF");
 }
 
 void loop() {

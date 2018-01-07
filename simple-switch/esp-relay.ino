@@ -1,6 +1,6 @@
-#include "relay.h"
+#include "esp-relay.h"
 
-Relay::Relay(byte gpio, byte stateOn)
+EspRelay::EspRelay(byte gpio, byte stateOn)
 {
   _gpio = gpio;
   _stateOn = (stateOn > 0) ? 1 : 0;
@@ -9,17 +9,17 @@ Relay::Relay(byte gpio, byte stateOn)
   digitalWrite(_gpio, _stateOff);
 }
 
-void Relay::on()
+void EspRelay::on()
 {
   digitalWrite(_gpio, _stateOn);
 }
 
-void Relay::off()
+void EspRelay::off()
 {
   digitalWrite(_gpio, _stateOff);
 }
 
-void Relay::toggle()
+void EspRelay::toggle()
 {
   if (digitalRead(_gpio) == 1) {
     digitalWrite(_gpio, 0);
@@ -29,7 +29,7 @@ void Relay::toggle()
   }
 }
 
-byte Relay::getState()
+byte EspRelay::getState()
 {
   return digitalRead(_gpio);
 }

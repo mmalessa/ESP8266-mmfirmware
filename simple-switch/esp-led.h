@@ -1,12 +1,12 @@
-#ifndef _led_h
-#define _led_h
+#ifndef _esp_led_h
+#define _esp_led_h
 
 #include <Ticker.h>
 
-class Led
+class EspLed
 {
   public:
-    Led(byte gpio, byte stateOn);
+    EspLed(byte gpio, byte stateOn);
     void on();
     void off();
     void blink(unsigned int t);

@@ -1,6 +1,6 @@
-#include "led.h"
+#include "esp-led.h"
 
-Led::Led(byte gpio, byte stateOn)
+EspLed::EspLed(byte gpio, byte stateOn)
 {
   _gpio = gpio;
   _stateOn = (stateOn > 0) ? 1 : 0;
@@ -9,35 +9,35 @@ Led::Led(byte gpio, byte stateOn)
   digitalWrite(_gpio, _stateOff);
 }
 
-void Led::on()
+void EspLed::on()
 {
   digitalWrite(_gpio, _stateOn);
 }
 
-void Led::off()
+void EspLed::off()
 {
   digitalWrite(_gpio, _stateOff);
 }
 
-void Led::blink(unsigned int ms)
+void EspLed::blink(unsigned int ms)
 {
   on();
   delay(ms);
   off();
 }
 
-void Led::startBlinking(float sec)
+void EspLed::startBlinking(float sec)
 {
-  _ledTimer.attach(sec, LedBlinkingCallback, _gpio);
+  _ledTimer.attach(sec, EspLedBlinkingCallback, _gpio);
 }
 
-void Led::stopBlinking()
+void EspLed::stopBlinking()
 {
   _ledTimer.detach();
   off();
 }
 
-void LedBlinkingCallback(byte gpio)
+void EspLedBlinkingCallback(byte gpio)
 {
   if (digitalRead(gpio) == 1) {
     digitalWrite(gpio, 0);
