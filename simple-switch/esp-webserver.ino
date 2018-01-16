@@ -102,11 +102,11 @@ void httpHandleConfiguration()
   content += "<div><label>Device name</label><input type='text' name='wifiDeviceName' length='32' value='"; content += cfg.wifiDeviceName; content += "'/></div>";
 
   content += "<h4>MQTT</h4>";
-  content += "<div><label>Host</label><input type='text' name='mqttHost' length='32' value='"; content += ""; content += "'/></div>";
-  content += "<div><label>Port</label><input type='text' name='mqttPort' length='5' value='"; content += ""; content += "'/></div>";
-  content += "<div><label>User</label><input type='text' name='mqttUser' length='32' value='"; content += ""; content += "'/></div>";
-  content += "<div><label>Password</label><input type='text' name='mqttPassword' length='32' value='"; content += ""; content += "'/></div>";
-  content += "<div><label>Topic</label><input type='text' name='mqttTopic' length='32' value='"; content += ""; content += "'/></div>";
+  content += "<div><label>Host</label><input type='text' name='mqttHost' length='32' value='"; content += cfg.mqttHost; content += "'/></div>";
+  content += "<div><label>Port</label><input type='text' name='mqttPort' length='5' value='"; content += cfg.mqttPort; content += "'/></div>";
+  content += "<div><label>User</label><input type='text' name='mqttUser' length='32' value='"; content += cfg.mqttUser; content += "'/></div>";
+  content += "<div><label>Password</label><input type='text' name='mqttPassword' length='32' value='"; content += cfg.mqttPassword; content += "'/></div>";
+  content += "<div><label>Topic</label><input type='text' name='mqttTopic' length='32' value='"; content += cfg.mqttTopic; content += "'/></div>";
 
   content += "<div></div>";
   content += "<div><input type='submit' value='Save'></div>";
@@ -117,6 +117,15 @@ void httpHandleConfiguration()
 
 void httpHandleSaveConfiguration()
 {
+
+  cfg.setWifiSSID(httpServer.arg("wifiSSID"));
+  cfg.setWifiPassword(httpServer.arg("wifiPassword"));
+  cfg.setWifiDeviceName(httpServer.arg("wifiDeviceName"));
+  cfg.setMqttHost(httpServer.arg("mqttHost"));
+  cfg.setMqttUser(httpServer.arg("mqttUser"));
+  cfg.setMqttPassword(httpServer.arg("mqttPassword"));
+  cfg.setMqttTopic(httpServer.arg("mqttTopic"));
+  
   String content = "Saved";
 
   content += "<form action='/reboot' method='post'>";

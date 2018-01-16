@@ -3,18 +3,6 @@
 
 #include <EEPROM.h>
 
-// GPIO configuration
-#define BUTTON_GPIO 0
-#define LED_GPIO 1
-#define RELAY_GPIO 2
-
-// static parameters
-#define ON_WHEN_LOW 0
-#define ON_WHEN_HIGH 1
-#define MODE_NORMAL_WORK 0
-#define MODE_CONFIGURATION 1
-#define EEPROM_SIZE 512
-
 class Config
 {
   private:

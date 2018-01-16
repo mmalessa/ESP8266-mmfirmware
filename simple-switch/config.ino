@@ -21,9 +21,9 @@ void Config::setWifiSSID(String in) { write(0, 32, in); }
 void Config::setWifiPassword(String in) { write(64, 32, in); }
 void Config::setWifiDeviceName(String in) { write(96, 32, in); }
 void Config::setMqttHost(String in) { write(128, 32, in); }
-void Config::setMqttUser(String in) { write(160, 32, mqttUser); }
-void Config::setMqttPassword(String in) { write(192, 32, mqttPassword); }
-void Config::setMqttTopic(String in) { write(224, 32, mqttTopic); }
+void Config::setMqttUser(String in) { write(160, 32, in); }
+void Config::setMqttPassword(String in) { write(192, 32, in); }
+void Config::setMqttTopic(String in) { write(224, 32, in); }
 void Config::setMqttPort(unsigned int in) { write(256, 5, String(in)); }
 
 void Config::write(unsigned int address, unsigned int size, String in) {
