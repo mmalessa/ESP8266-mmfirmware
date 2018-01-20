@@ -51,3 +51,8 @@ void Config::clear(unsigned int address, unsigned int size) {
     EEPROM.write(i + address, 255);
   }
 }
+
+bool Config::isConfigured() {
+  return !(wifiSSID[0] == (char)0 || wifiPassword[0] == (char)0 || wifiDeviceName[0] == (char)0);
+}
+

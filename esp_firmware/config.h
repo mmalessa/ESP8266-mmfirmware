@@ -21,6 +21,7 @@ class Config
     void setMqttUser(String in);
     void setMqttPassword(String in);
     void setMqttTopic(String in);
+    bool isConfigured();
     char wifiSSID[32];
     char wifiPassword[32];
     char wifiDeviceName[32];

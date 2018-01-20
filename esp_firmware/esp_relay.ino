@@ -1,4 +1,4 @@
-#include "esp-relay.h"
+#include "esp_relay.h"
 
 EspRelay::EspRelay(byte gpio, byte stateOn)
 {
