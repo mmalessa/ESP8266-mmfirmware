@@ -7,6 +7,9 @@ Config::Config()
 
 void Config::load()
 {
+  #if DEBUG_MODE
+  Serial.println("Load config...");
+  #endif
   read(0, 32).toCharArray(wifiSSID, sizeof(wifiSSID));
   read(64, 32).toCharArray(wifiPassword, sizeof(wifiPassword));
   read(96, 32).toCharArray(wifiDeviceName, sizeof(wifiDeviceName));

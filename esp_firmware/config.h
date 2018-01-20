@@ -3,6 +3,8 @@
 
 #include <EEPROM.h>
 
+#define EEPROM_SIZE 512
+
 class Config
 {
   private:

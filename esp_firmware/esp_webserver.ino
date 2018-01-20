@@ -2,6 +2,9 @@
 
 void httpServerStart()
 {
+  #if DEBUG_MODE
+  Serial.println("Starting web server");
+  #endif
   httpServer.on("/", httpHandleRoot);
   httpServer.on("/on", httpHandleOn);
   httpServer.on("/off", httpHandleOff);
@@ -11,6 +14,15 @@ void httpServerStart()
   httpServer.on("/favicon.ico",httpHandleFavicon);
   httpServer.onNotFound(http404);
   httpServer.begin();
+}
+
+void httpServerStop()
+{
+  #if DEBUG_MODE
+  Serial.println("Stopping web server");
+  #endif
+  
+  httpServer.stop();
 }
 
 void httpResponse(String &content, bool redirect)
@@ -51,6 +63,7 @@ void httpResponse(String &content, bool redirect)
   html += 
     "<div class='navigation'>"
     "<ul>"
+    "<li class='horizontal'><a href='/'>Info</a></li>"
     "<li class='horizontal'><a href='/on'>ON</a></li>"
     "<li class='horizontal'><a href='/off'>OFF</a></li>"
     "<li class='horizontal'><a href='/configuration'>Configuration</a></li>"
@@ -74,21 +87,22 @@ void httpResponse(String &content, bool redirect)
 
 void httpHandleRoot()
 {
-  String content = "Home page";
+  String content = "Relay state is: ";
+  content += masterRelay.getState() ? "ON" : "OFF";
   httpResponse(content, false);
 }
 
 void httpHandleOn()
 {
   masterRelay.on();
-  String content = "ON";
+  String content = "Switch to ON";
   httpResponse(content, true);
 }
 
 void httpHandleOff()
 {
   masterRelay.off();
-  String content = "OFF";
+  String content = "Switch to OFF";
   httpResponse(content, true);
 }
 
@@ -140,7 +154,7 @@ void httpHandleReboot()
   String content = "Reboot";
   httpResponse(content, true);
   delay(500);
-  ESP.restart();
+  reboot();
 }
 
 void httpHandleFavicon()

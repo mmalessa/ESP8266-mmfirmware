@@ -3,19 +3,23 @@
 EspLed::EspLed(byte gpio, byte stateOn)
 {
   _gpio = gpio;
+  pinMode(_gpio, OUTPUT);
+  
   _stateOn = (stateOn > 0) ? 1 : 0;
   _stateOff = (stateOn > 0) ? 0 : 1;
-  pinMode(_gpio, OUTPUT);
-  digitalWrite(_gpio, _stateOff);
+  _currentState = _stateOff;
+  off();
 }
 
 void EspLed::on()
 {
+  _currentState = _stateOn;
   digitalWrite(_gpio, _stateOn);
 }
 
 void EspLed::off()
 {
+  _currentState = _stateOff;
   digitalWrite(_gpio, _stateOff);
 }
 
@@ -26,9 +30,10 @@ void EspLed::blink(unsigned int ms)
   off();
 }
 
-void EspLed::startBlinking(float sec)
+void EspLed::startBlinking(unsigned int ms)
 {
-  _ledTimer.attach(sec, EspLedBlinkingCallback, _gpio);
+  on();
+  _ledTimer.attach_ms(ms, EspLedBlinkingCallback);
 }
 
 void EspLed::stopBlinking()
@@ -37,13 +42,18 @@ void EspLed::stopBlinking()
   off();
 }
 
-void EspLedBlinkingCallback(byte gpio)
+void EspLed::blinkingCallback()
 {
-  if (digitalRead(gpio) == 1) {
-    digitalWrite(gpio, 0);
+  if (_currentState == _stateOn) {
+    off();
   }
   else {
-    digitalWrite(gpio, 1);
-  }
+    on();
+  }  
+}
+
+void EspLedBlinkingCallback()
+{
+  blueLed.blinkingCallback();
 }
 

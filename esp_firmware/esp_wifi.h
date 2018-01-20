@@ -6,9 +6,11 @@
 class EspWifi
 {
   public:
-    void startAP(const char deviceName[32]);
+    bool startAP(const char deviceName[32]);
     void startSTA(const char ssid[32], const char password[32], const char deviceName[32]);
     bool isConnected();
+    
+
 };
 
 #endif
