@@ -2,6 +2,7 @@
 #define _esp_button_h
 
 #include <Ticker.h>
+#include <FunctionalInterrupt.h>
 
 class EspButton
 {
@@ -10,7 +11,6 @@ class EspButton
   public:
     EspButton(byte gpio, byte stateOn);
     void interruptCallback();
-    void timerCallback();
     void onShortPress(CallbackFunction onPressFunction);
     void onLongPress(CallbackFunction onPressFunction);
   private:

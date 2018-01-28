@@ -9,7 +9,7 @@ EspButton::EspButton(byte gpio, byte stateOn)
   onShortPress([]()->void{});
   onLongPress([]()->void{});
   pinMode(_gpio, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(_gpio), EspButtonInterruptCallback, CHANGE);
+  attachInterrupt(_gpio, std::bind(&EspButton::interruptCallback, this), CHANGE );
 }
 
 void EspButton::interruptCallback()
@@ -24,22 +24,17 @@ void EspButton::interruptCallback()
 
 void EspButton::onPress()
 {
-  _buttonTimer.attach(0.05, EspButtonTimerCallback);
+  _buttonTimer.attach<unsigned int *>(0.1, [](unsigned int * c){ *c = *c + 1; }, &_counter);
 }
 void EspButton::onRelase()
 {
-  if (_counter > 40) {
+  if (_counter > 15) {
     _onLongPressCallback();
   } else if (_counter > 0) {
     _onShortPressCallback();
   }
   _counter = 0;
   _buttonTimer.detach();
-}
-
-void EspButton::timerCallback()
-{
-  _counter++;
 }
 
 void EspButton::onShortPress(CallbackFunction onPressFunction)
@@ -50,14 +45,4 @@ void EspButton::onShortPress(CallbackFunction onPressFunction)
 void EspButton::onLongPress(CallbackFunction onPressFunction)
 {
   _onLongPressCallback = onPressFunction;
-}
-
-  // uggly, but...
-void EspButtonInterruptCallback()
-{
-  espButton.interruptCallback();
-}
-void EspButtonTimerCallback()
-{
-  espButton.timerCallback();
 }
