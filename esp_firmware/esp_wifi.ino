@@ -7,8 +7,10 @@ bool EspWifi::startAP(const char deviceName[32])
   #endif
 
   // some magic
-  WiFi.disconnect();
-  WiFi.softAPdisconnect();
+  if (WiFi.status() == WL_CONNECTED) {
+    WiFi.disconnect();
+    //WiFi.softAPdisconnect();
+  }
   WiFi.mode(WIFI_OFF);
   WiFi.forceSleepBegin();
   delay(500);
