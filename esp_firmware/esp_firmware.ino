@@ -1,3 +1,7 @@
+/*
+  ESP OH: firmware
+  2018 mmalessa http://www.malessa.pl/
+*/
 
 #include "config.h"
 #include "esp_led.h"

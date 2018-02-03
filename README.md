@@ -12,5 +12,6 @@ pin 7 - GPIO_3 / RxD (nc)<br>
 pin 8 - VCC (3.3V)<br>
 <br>
 <ul>
+<li>2018.02.03 - First working beta version.</li>
 <li>2018.01.06 - Development version. Not suitable for use.</li>
 <ul>
