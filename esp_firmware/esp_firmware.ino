@@ -7,7 +7,7 @@
 #include "esp_webserver.h"
 #include "esp_mqtt.h"
 
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 
 // GPIO configuration
 #define BUTTON_GPIO 0
@@ -29,24 +29,25 @@ EspButton espButton(BUTTON_GPIO, ON_WHEN_LOW);
 EspWifi espWifi;
 EspLed blueLed(LED_GPIO, ON_WHEN_LOW);
 EspRelay masterRelay(RELAY_GPIO, ON_WHEN_HIGH);
+EspWebServer espWebServer;
 EspMqtt espMqtt;
 
-byte EspMode;
+byte espMode;
 
 void setup() 
 {
-  
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.begin(115200);
   Serial.println("Starting...");
-  #endif
+#else
+  blueLed.startBlinking(100);
+#endif
 
-  delay(500);
+  espMode = MODE_INIT;
+  
+  delay(200);
   cfg.load();
-  delay(500);
-
-  //startConfigurationMode();
-  //return; 
+  delay(200);
   
   if (cfg.isConfigured()) {
     startNormalMode();    
@@ -57,97 +58,142 @@ void setup()
 
 void loop() 
 {
-  
-  if (EspMode == MODE_CONFIGURATION) {
-    httpServer.handleClient();
-  } else if (EspMode == MODE_NORMAL) {
+  if (espMode == MODE_CONFIGURATION) {
+    espWebServer.loop();
+  } else if (espMode == MODE_NORMAL) {
     espMqtt.loop();
-  } else if (EspMode == MODE_STANDBY) {
+  } else if (espMode == MODE_STANDBY) {
     delay(10000);
-    startNormalMode();
+    if (espMode == MODE_STANDBY) {
+      startNormalMode();
+    }
   } else { // MODE_INIT
     
   }
-  
+}
+
+void goToConfiguration()
+{
+#if DEBUG_MODE
+  Serial.println("Go to configuration");
+#endif
+
+  cfg.setNeedConfiguration(true);
+  delay(100);
+  reboot();
+}
+
+void exitFromConfiguration()
+{
+#if DEBUG_MODE
+  Serial.println("Exit from configuration");
+#endif
+
+  cfg.setNeedConfiguration(false);
+  delay(100);
+  reboot();
+}
+
+void startConfigurationMode()
+{ 
+  espMode = MODE_CONFIGURATION;
+
+#if DEBUG_MODE
+  Serial.println("Start configuration mode");
+#else
+  blueLed.startBlinking(1000);
+#endif
+
+  espMqtt.stop();
+
+  espButton.onLongPress(exitFromConfiguration);
+  espButton.onShortPress([]()->void{});
+
+  bool apStatus = espWifi.startAP(cfg.wifiDeviceName);
+
+  if(apStatus) {
+    espWebServer.start();
+  } 
+
 }
 
 void startNormalMode()
 {
-  setMode(MODE_INIT);
+  espMode = MODE_NORMAL;
   
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.println("Start normal mode");
-  #endif
+#else
+  blueLed.startBlinking(400);
+#endif
   
-  espButton.onLongPress(startConfigurationMode);
+  espButton.onLongPress(goToConfiguration);
   espButton.onShortPress(changeRelayState);
   
-  httpServerStop();
+  espWebServer.stop();
+  
   unsigned int nbTry = 20;
-
-  if (!espWifi.isConnected()) {
+  if (espMode == MODE_NORMAL && !espWifi.isConnected()) {
     espWifi.startSTA(cfg.wifiSSID, cfg.wifiPassword, cfg.wifiDeviceName);
     
-    while (!espWifi.isConnected() && nbTry > 0 && EspMode == MODE_INIT) {
+    while (espMode == MODE_NORMAL && !espWifi.isConnected() && nbTry > 0) {
       nbTry--;
       delay(1000);
     }
   }
   
-  if (espWifi.isConnected()) {
+  if (espMode == MODE_NORMAL && espWifi.isConnected()) {
 
-    #if DEBUG_MODE
+#if DEBUG_MODE
     Serial.println(WiFi.localIP());
-    #endif
-    
+#else
+    blueLed.startBlinking(600);
+#endif
     
     espMqtt.init(cfg.mqttHost, cfg.mqttPort);
     nbTry = 5;
     delay(100);
     
-    while (!espMqtt.isConnected() && nbTry > 0 && EspMode == MODE_INIT) {
+    while (espMode == MODE_NORMAL && !espMqtt.isConnected() && nbTry > 0) {
       nbTry--;
       espMqtt.connect(cfg.wifiDeviceName, cfg.mqttUser, cfg.mqttPassword, cfg.mqttTopic);
       delay(3000);
     }
 
     if(espMqtt.isConnected()) {
+#if DEBUG_MODE
+      Serial.println("Mqtt connected");
+#else
+      blueLed.stopBlinking();
+#endif
       espMqtt.onChangeState(mqttChangeStateCallback);
-      setMode(MODE_NORMAL);
-    } else {
-      setMode(MODE_STANDBY);
+    } else if (espMode == MODE_NORMAL) {
+      espMode = MODE_STANDBY;
+      
+#if !DEBUG_MODE
+      blueLed.startBlinking(3000);
+#endif
+
     }
     
+  } else if (espMode == MODE_NORMAL) {
+    espMode = MODE_STANDBY;
+    
+#if !DEBUG_MODE
+    blueLed.startBlinking(3000);
+#endif
+    
   }
-  else {
-    setMode(MODE_STANDBY);
-  }
-}
-
-void startConfigurationMode()
-{
-  #if DEBUG_MODE
-  Serial.println("Start configuration mode");
-  #endif
-
-  setMode(MODE_INIT);
   
-  espButton.onLongPress(reboot); //TODO ESP.restart();
-  espButton.onShortPress([]()->void{});
-  bool apStatus = espWifi.startAP(cfg.wifiDeviceName);
-  if(apStatus) {
-    httpServerStart();
-    setMode(MODE_CONFIGURATION);
-  }
 }
 
 void reboot()
 {
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.println("Restart");
   delay(500);
   Serial.end();
-  #endif;
+#endif;
   
   delay(500);
   ESP.restart();
@@ -155,59 +201,21 @@ void reboot()
 
 void changeRelayState()
 {
-  #if DEBUG_MODE
-  Serial.println("Change relay state");
-  #else
-  blueLed.blink(200);
-  #endif
   masterRelay.toggle();
   if (espMqtt.isConnected()) {
     char  message[4];
     sprintf(message, "%s", masterRelay.getState() ? "ON" : "OFF");
     espMqtt.publishState(cfg.mqttTopic, message);
   }
+#if DEBUG_MODE
+  Serial.println("Change relay state");
+#else
+  blueLed.blink(100);
+#endif
 }
-
-void setMode(byte mode)
-{
-  EspMode = mode;
-
-  if (mode == MODE_NORMAL) {
-    #if DEBUG_MODE
-    Serial.print("Set MODE_NORMAL");
-    #else
-    blueLed.stopBlinking();
-    #endif
-  } else if (mode == MODE_CONFIGURATION) {
-    #if DEBUG_MODE
-    Serial.print("Set MODE_CONFIGURATION");
-    #else
-    blueLed.startBlinking(2000);
-    #endif
-  } else if (mode == MODE_STANDBY) {
-    #if DEBUG_MODE
-    Serial.print("Set MODE_STANDBY");
-    #else
-    blueLed.startBlinking(5000);
-    #endif
-  } else { // MODE_INIT
-    #if DEBUG_MODE
-    Serial.print("Set MODE_INIT");
-    #else
-    blueLed.startBlinking(250);
-    #endif
-  }
-
-}
-
 
 void mqttChangeStateCallback(byte state)
 {
-  #if DEBUG_MODE
-  Serial.print("Mqtt incoming state: ");
-  Serial.println(state);
-  #endif
-  
   char  message[4];
   if (state == 1) {
     masterRelay.on();
@@ -217,5 +225,13 @@ void mqttChangeStateCallback(byte state)
     sprintf(message, "%s", "OFF");
   }
   espMqtt.publishState(cfg.mqttTopic, message);
+  
+#if DEBUG_MODE
+  Serial.print("Mqtt incoming state: ");
+  Serial.println(state);
+#else
+  blueLed.blink(100);
+#endif
+
 }
 

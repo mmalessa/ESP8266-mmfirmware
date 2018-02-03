@@ -9,6 +9,7 @@ class EspMqtt
   
   private:
     PubSubClient Mqtt;
+    bool isRunning = false;
     WiFiClient wifiClient;
     CallbackFunction _onChangeStateCallback;
 
@@ -19,7 +20,7 @@ class EspMqtt
     void callback(char* topic, byte* payload, unsigned int length);
     bool isConnected();
     void connect(char wifiDeviceName[32], char mqttUser[32], char mqttPassword[32], char mqttTopic[32]);
-    void disconnect();
+    void stop();
     void publishState(char mqttTopic[32], char* message);
     void loop();
     void onChangeState(CallbackFunction onChangeStateFunction);

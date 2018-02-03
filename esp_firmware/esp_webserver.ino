@@ -1,31 +1,49 @@
 #include "esp_webserver.h"
 
-void httpServerStart()
+EspWebServer::EspWebServer()
 {
-  #if DEBUG_MODE
+}
+
+void EspWebServer::start()
+{
+#if DEBUG_MODE
   Serial.println("Starting web server");
-  #endif
-  httpServer.on("/", httpHandleRoot);
-  httpServer.on("/on", httpHandleOn);
-  httpServer.on("/off", httpHandleOff);
-  httpServer.on("/configuration", httpHandleConfiguration);
-  httpServer.on("/save", httpHandleSaveConfiguration);
-  httpServer.on("/reboot", httpHandleReboot);
-  httpServer.on("/favicon.ico",httpHandleFavicon);
-  httpServer.onNotFound(http404);
-  httpServer.begin();
+#endif
+ 
+  webServer.on("/", std::bind(&EspWebServer::handleRoot, this));
+  webServer.on("/on", std::bind(&EspWebServer::handleOn, this));
+  webServer.on("/off", std::bind(&EspWebServer::handleOff, this));
+  webServer.on("/configuration", std::bind(&EspWebServer::handleConfiguration, this));
+  webServer.on("/save", std::bind(&EspWebServer::handleSaveConfiguration, this));
+  webServer.on("/reboot", std::bind(&EspWebServer::handleReboot, this));
+  webServer.on("/favicon.ico",std::bind(&EspWebServer::handleFavicon, this));
+  webServer.onNotFound(std::bind(&EspWebServer::handle404, this));
+  webServer.begin();
+  isRunning = true;
 }
 
-void httpServerStop()
+void EspWebServer::stop()
 {
-  #if DEBUG_MODE
-  Serial.println("Stopping web server");
-  #endif
+  if (!isRunning) {
+    return;
+  }
   
-  httpServer.stop();
+#if DEBUG_MODE
+  Serial.println("Stopping web server");
+#endif
+  
+  webServer.stop();
+  isRunning = false;
 }
 
-void httpResponse(String &content, bool redirect)
+void EspWebServer::loop()
+{
+  if (isRunning) {
+    webServer.handleClient();
+  }
+}
+
+void EspWebServer::response(String &content, bool redirect = false)
 {
   String html = 
     "<!DOCTYPE html>"
@@ -78,36 +96,40 @@ void httpResponse(String &content, bool redirect)
     "</body>"
     "</html>";
 
-  httpServer.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  httpServer.sendHeader("Pragma", "no-cache");
-  httpServer.sendHeader("Expires", "-1");
+  webServer.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  webServer.sendHeader("Pragma", "no-cache");
+  webServer.sendHeader("Expires", "-1");
 
-  httpServer.send(200, "text/html", html);
+  webServer.send(200, "text/html", html);
 }
 
-void httpHandleRoot()
+
+void EspWebServer::handleRoot()
 {
   String content = "Relay state is: ";
   content += masterRelay.getState() ? "ON" : "OFF";
-  httpResponse(content, false);
+ response(content);
 }
 
-void httpHandleOn()
+void EspWebServer::handleOn()
 {
+  // FIXME (global masterRelay)
   masterRelay.on();
   String content = "Switch to ON";
-  httpResponse(content, true);
+  response(content);
 }
 
-void httpHandleOff()
+void EspWebServer::handleOff()
 {
+  // FIXME (global masterRelay)
   masterRelay.off();
   String content = "Switch to OFF";
-  httpResponse(content, true);
+  response(content);
 }
 
-void httpHandleConfiguration()
+void EspWebServer::handleConfiguration()
 {
+  //FIXME (global cfg)
   String content = "<form action='/save' method='post'>";
 
   content += "<h4>WiFi</h4>";
@@ -126,19 +148,19 @@ void httpHandleConfiguration()
   content += "<div><input type='submit' value='Save'></div>";
   
   content += "</form>";
-  httpResponse(content, false);
+  response(content);
 }
 
-void httpHandleSaveConfiguration()
+void EspWebServer::handleSaveConfiguration()
 {
-
-  cfg.setWifiSSID(httpServer.arg("wifiSSID"));
-  cfg.setWifiPassword(httpServer.arg("wifiPassword"));
-  cfg.setWifiDeviceName(httpServer.arg("wifiDeviceName"));
-  cfg.setMqttHost(httpServer.arg("mqttHost"));
-  cfg.setMqttUser(httpServer.arg("mqttUser"));
-  cfg.setMqttPassword(httpServer.arg("mqttPassword"));
-  cfg.setMqttTopic(httpServer.arg("mqttTopic"));
+  // FIXME (global cfg)
+  cfg.setWifiSSID(webServer.arg("wifiSSID"));
+  cfg.setWifiPassword(webServer.arg("wifiPassword"));
+  cfg.setWifiDeviceName(webServer.arg("wifiDeviceName"));
+  cfg.setMqttHost(webServer.arg("mqttHost"));
+  cfg.setMqttUser(webServer.arg("mqttUser"));
+  cfg.setMqttPassword(webServer.arg("mqttPassword"));
+  cfg.setMqttTopic(webServer.arg("mqttTopic"));
   
   String content = "Saved";
 
@@ -146,26 +168,27 @@ void httpHandleSaveConfiguration()
   content += "<div><input type='submit' value='Reboot'></div>";
   content += "</form>";
   
-  httpResponse(content, false);
+  response(content);
 }
 
-void httpHandleReboot()
+void EspWebServer::handleReboot()
 {
   String content = "Reboot";
-  httpResponse(content, true);
+  response(content);
   delay(500);
-  reboot();
+
+  // FIXME
+  //reboot();
+  exitFromConfiguration();
 }
 
-void httpHandleFavicon()
+void EspWebServer::handleFavicon()
 {
 }
 
-void http404()
+void EspWebServer::handle404()
 {
   String content = "ERROR 404";
-  httpResponse(content, false);
+  response(content);
 }
-
-
 

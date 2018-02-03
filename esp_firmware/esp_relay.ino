@@ -11,18 +11,18 @@ EspRelay::EspRelay(byte gpio, byte stateOn)
 
 void EspRelay::on()
 {
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.println("Relay set to ON");
-  #endif
+#endif
   
   digitalWrite(_gpio, _stateOn);
 }
 
 void EspRelay::off()
 {
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.println("Relay set to OFF");
-  #endif
+#endif
   
   digitalWrite(_gpio, _stateOff);
 }
@@ -46,10 +46,10 @@ byte EspRelay::getState()
     state = 0;
   }
   
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.print("Relay state: ");
   Serial.println(state);
-  #endif
+#endif
   
   return state;
 }

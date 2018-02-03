@@ -7,9 +7,10 @@ Config::Config()
 
 void Config::load()
 {
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.println("Load config...");
-  #endif
+#endif
+
   read(0, 32).toCharArray(wifiSSID, sizeof(wifiSSID));
   read(64, 32).toCharArray(wifiPassword, sizeof(wifiPassword));
   read(96, 32).toCharArray(wifiDeviceName, sizeof(wifiDeviceName));
@@ -18,6 +19,7 @@ void Config::load()
   read(192, 32).toCharArray(mqttPassword, sizeof(mqttPassword));
   read(224, 32).toCharArray(mqttTopic, sizeof(mqttTopic));
   mqttPort = read(256, 5).toInt();
+  needConfiguration = EEPROM.read(261);
 }
 
 void Config::setWifiSSID(String in) { write(0, 32, in); }
@@ -28,6 +30,7 @@ void Config::setMqttUser(String in) { write(160, 32, in); }
 void Config::setMqttPassword(String in) { write(192, 32, in); }
 void Config::setMqttTopic(String in) { write(224, 32, in); }
 void Config::setMqttPort(unsigned int in) { write(256, 5, String(in)); }
+void Config::setNeedConfiguration(bool yn) { EEPROM.write(261, (yn ? 1 : 0)); EEPROM.commit(); }
 
 void Config::write(unsigned int address, unsigned int size, String in) {
   clear(address, size);
@@ -56,6 +59,11 @@ void Config::clear(unsigned int address, unsigned int size) {
 }
 
 bool Config::isConfigured() {
-  return !(wifiSSID[0] == (char)0 || wifiPassword[0] == (char)0 || wifiDeviceName[0] == (char)0);
+  bool isc = !(wifiSSID[0] == (char)0 || wifiPassword[0] == (char)0 || wifiDeviceName[0] == (char)0 || needConfiguration == 1);
+#if DEBUG_MODE
+  Serial.print("Is configured: ");
+  Serial.println(isc ? "YES" : "NO");
+#endif
+  return isc;
 }
 

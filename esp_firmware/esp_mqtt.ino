@@ -6,65 +6,64 @@ EspMqtt::EspMqtt()
 }
 
 void EspMqtt::init(char host[32], int port) {
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.print("Mqtt init ");
   Serial.print(host);
   Serial.print(":");
   Serial.println(port);
-  #endif
+#endif
   
   Mqtt.setClient(wifiClient);
   Mqtt.setServer(host, port);
   Mqtt.setCallback(std::bind(&EspMqtt::callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-  //Mqtt.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->callback(topic, payload, length); });
 }
 
 void EspMqtt::callback(char* topic, byte* payload, unsigned int length)
 {
-  #if DEBUG_MODE
-  Serial.print("Mqtt callback: ");
-  #endif
   
   if (length >= 1) { // command arrived
     if ((char)payload[1] == 'N') {
-      #if DEBUG_MODE
-      Serial.print("ON");
-      #endif
+#if DEBUG_MODE
+      Serial.println("Mqtt callback: ON");
+#endif
       _onChangeStateCallback(1);
     } else if ((char)payload[1] == 'F') {
-      #if DEBUG_MODE
-      Serial.print("OFF");
-      #endif
+#if DEBUG_MODE
+      Serial.println("Mqtt callback: OFF");
+#endif
       _onChangeStateCallback(0);
+    } else {
+#if DEBUG_MODE
+      Serial.println("Mqtt callback: [unknown command]");
+#endif
     }
   }
-  #if DEBUG_MODE
-  Serial.println("");
-  #endif
 }
 
 bool EspMqtt::isConnected()
 {
   bool ok = Mqtt.connected();
+  isRunning = ok;
   return ok;
 }
 
 void EspMqtt::connect(char wifiDeviceName[32], char mqttUser[32], char mqttPassword[32], char mqttTopic[32]) {
   if (isConnected()) {
+    isRunning = true;
     return;
   }
   
   char  mqttString[60];
   sprintf(mqttString, "ESP (Device name: %s)", wifiDeviceName);
   
-  #if DEBUG_MODE
+#if DEBUG_MODE
   Serial.print("Mqtt try: ");
   Serial.print(mqttString);
   Serial.print(" ");
   Serial.print(mqttUser);
   Serial.print("/");
   Serial.println(mqttPassword);
-  #endif
+#endif
 
   if (Mqtt.connect(mqttString, mqttUser, mqttPassword)) {
     delay(500);
@@ -76,9 +75,12 @@ void EspMqtt::connect(char wifiDeviceName[32], char mqttUser[32], char mqttPassw
   }
 }
 
-void EspMqtt::disconnect()
+void EspMqtt::stop()
 {
-  Mqtt.disconnect();
+  if (isConnected()) {
+    Mqtt.disconnect();
+  }
+  isRunning = false;
 }
 
 void EspMqtt::publishState(char mqttTopic[32], char* message) {
@@ -95,5 +97,7 @@ void EspMqtt::onChangeState(CallbackFunction onChangeStateFunction)
 }
 
 void  EspMqtt::loop() {
-  Mqtt.loop();
+  if (isRunning) {
+    Mqtt.loop();
+  }
 }
