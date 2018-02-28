@@ -14,9 +14,9 @@
 #define DEBUG_MODE false
 
 // GPIO configuration
-#define BUTTON_GPIO 0
+#define BUTTON_GPIO 2
 #define LED_GPIO 1
-#define RELAY_GPIO 2
+#define RELAY_GPIO 0
 
 // static parameters
 #define ON_WHEN_LOW 0
@@ -32,7 +32,7 @@ Config cfg;
 EspButton espButton(BUTTON_GPIO, ON_WHEN_LOW);
 EspWifi espWifi;
 EspLed blueLed(LED_GPIO, ON_WHEN_LOW);
-EspRelay masterRelay(RELAY_GPIO, ON_WHEN_HIGH);
+EspRelay masterRelay(RELAY_GPIO, ON_WHEN_LOW);
 EspWebServer espWebServer;
 EspMqtt espMqtt;
 
