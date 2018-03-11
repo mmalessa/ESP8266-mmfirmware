@@ -1,4 +1,4 @@
-<h2>ESP8266-OH</h2>
+<h2>ESP8266-SWITCH</h2>
 ESP8266 frimware to connect to openHAB
 
 <h3>ESP-01S - how to connect</h3>

@@ -1,6 +1,6 @@
 /*
-  ESP OH: firmware
-  2018 mmalessa http://www.malessa.pl/
+ *  ESP SWITCH: firmware
+ *  2018 mmalessa http://www.malessa.pl/
 */
 
 #include "config.h"
