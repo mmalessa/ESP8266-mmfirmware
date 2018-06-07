@@ -22,6 +22,7 @@ bool EspWifi::startAP(const char deviceName[32])
   bool statusAP = WiFi.softAP(deviceName);  
 
 #if DEBUG_MODE
+  Serial.println((String)"Device name: " + (String)deviceName);
   Serial.println(statusConfig ? "Config ready" : "Config failed!");
   Serial.println(statusAP ? "AP ready" : "AP failed!");
   Serial.println(WiFi.softAPIP());
