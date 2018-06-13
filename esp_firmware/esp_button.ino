@@ -28,7 +28,7 @@ void EspButton::onPress()
 }
 void EspButton::onRelase()
 {
-  if (_counter > 15) {
+  if (_counter > 10) {
     _onLongPressCallback();
   } else if (_counter > 0) {
     _onShortPressCallback();
